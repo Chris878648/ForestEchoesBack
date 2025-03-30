@@ -268,6 +268,22 @@ Api.post("/cart", authenticateToken, async (req, res) => {
   }
 
   try {
+    // Verificar el stock del producto
+    const productDoc = await getDoc(doc(db, "Products", productId));
+    if (!productDoc.exists()) {
+      return res.status(404).json({ message: "Producto no encontrado" });
+    }
+
+    const productData = productDoc.data();
+    if (productData.stock === 0) {
+      return res.status(400).json({ message: "El producto no tiene stock disponible" });
+    }
+
+    if (productData.stock < quantity) {
+      return res.status(400).json({ message: "La cantidad solicitada excede el stock disponible" });
+    }
+
+    // Obtener los productos del carrito
     const cartSnapshot = await getDocs(collection(db, "Cart"));
     const cartItems = cartSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
@@ -284,6 +300,7 @@ Api.post("/cart", authenticateToken, async (req, res) => {
       return res.status(200).json({ message: "Cantidad actualizada en el carrito" });
     }
 
+    // Agregar el producto al carrito
     const docRef = await addDoc(collection(db, "Cart"), {
       userId,
       productId,
