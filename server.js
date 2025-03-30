@@ -89,6 +89,27 @@ Api.post("/register", async (req, res) => {
   }
 });
 
+Api.post("/check-user", async (req, res) => {
+  const { username, email } = req.body;
+
+  if (!username || !email) {
+    return res.status(400).json({ message: "El nombre de usuario y el correo electrónico son obligatorios" });
+  }
+
+  try {
+    const querySnapshot = await getDocs(collection(db, "Users"));
+    const users = querySnapshot.docs.map((doc) => doc.data());
+
+    const usernameExists = users.some((user) => user.username === username);
+    const emailExists = users.some((user) => user.email === email);
+
+    res.status(200).json({ usernameExists, emailExists });
+  } catch (error) {
+    console.error("Error al verificar el usuario y correo:", error);
+    res.status(500).json({ message: "Error al verificar el usuario y correo" });
+  }
+});
+
 // Ruta para iniciar sesión
 Api.post("/login", async (req, res) => {
   const { username, password } = req.body;
