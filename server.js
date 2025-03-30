@@ -19,7 +19,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const Api = express();
-const port = process.env.PORT || 3002;
+const port = process.env.PORT;
 
 Api.use(express.json());
 Api.use(cors());
